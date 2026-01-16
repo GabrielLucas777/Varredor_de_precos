@@ -1,4 +1,4 @@
-# Price Monitor Bot - Automação de E-commerce
+# Bot de Monitoramento de Preços- Automação de E-commerce
 
 ## Visão Geral
 
@@ -636,3 +636,4 @@ Este projeto é fornecido sob licença MIT para fins educacionais e de automaç�
 Desenvolvido como demonstração de boas práticas em automação web, arquitetura modular e tratamento robusto de erros.
 
 **Última atualização:** Janeiro de 2026
+
