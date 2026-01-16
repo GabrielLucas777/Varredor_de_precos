@@ -230,7 +230,7 @@ Checklist de coisas que ainda precisam ser feitas:
   - Criar uma janelinha para adicionar/editar produtos
   - Sem precisar mexer no arquivo precos.json
   - Mostrar status do robô em tempo real
-  - Usar PyQt5 ou Tkinter
+  - Usar CustomTkinter
   - Status: Não iniciado
 
 ---
@@ -272,3 +272,4 @@ Se for melhorar o código agora, a prioridade é:
 Desenvolvido como projeto pessoal de automação.
 
 **Última atualização:** Janeiro de 2026
+
