@@ -1,0 +1,13 @@
+{
+    "monitor_superframe": {
+        "nome": "Monitor Gamer SuperFrame 23.8",
+        "preco_referencia": 899.0,
+        "url": "https://www.terabyteshop.com.br/produto/36653/monitor-gamer-superframe-view-238-pol-full-hd-fast-ips-1ms-180hz-99-srgb-freesync-hdmidp-sfvfb-24180-fhd-pro"
+    },
+    "samsung_G5": {
+        "nome": "Monitor Gamer Samsung Odyssey G5 34",
+        "preco_referencia": 1800.0,
+        "url": "https://www.terabyteshop.com.br/produto/31707/monitor-gamer-samsung-odyssey-g5-34-pol-va-curvo-ultrawide-wqhd-1ms-165hz-hdr10-freesync-premium-hdmidp-lc34g55twwlmzd",
+        "status": "indisponivel"
+    }
+}
