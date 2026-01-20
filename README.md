@@ -197,10 +197,21 @@ Certifique-se de que o arquivo está na mesma pasta do script. Se não tiver, cr
 
 ```
 automacao_ecommerce/
-├── automacao.py          ← O script principal
-├── precos.json           ← Seus produtos (EDITE AQUI!)
+├── src/
+│   ├── automacao.py      ← O script principal
+│   └── comms.py          ← Módulo de comunicação (Telegram)
+├── data/
+│   └── precos.json       ← Seus produtos (EDITE AQUI!)
+├── .gitignore            ← Protege credenciais (.env, __pycache__)
+├── .env                  ← Variáveis de ambiente (locais, não versionado)
+├── requirements.txt      ← Dependências do projeto
 └── README.md             ← Este arquivo
 ```
+
+**Nota:** O projeto agora é modularizado:
+- **src/** contém todo o código Python
+- **data/** contém arquivos de dados (JSON)
+- **.env** armazena suas credenciais (Token e Chat ID) de forma segura
 
 ---
 
@@ -208,10 +219,10 @@ automacao_ecommerce/
 
 Checklist de coisas que ainda precisam ser feitas:
 
-- [ ] **Integração com Telegram**
+- [x] **Integração com Telegram** ✅
   - Enviar alerta direto no celular quando preço atingir alvo
   - Usar bot do Telegram para notificações
-  - Status: Não iniciado
+  - Status: Concluído
 
 - [ ] **Monitoramento de Múltiplas Lojas**
   - Adicionar suporte para Kabum
@@ -232,6 +243,41 @@ Checklist de coisas que ainda precisam ser feitas:
   - Mostrar status do robô em tempo real
   - Usar PyQt5 ou Tkinter
   - Status: Não iniciado
+
+---
+
+## Configuração do Telegram
+
+Agora o robô pode enviar notificações direto para seu celular via Telegram!
+
+### O Que Você Precisa
+
+**1. Criar um Bot no Telegram:**
+- Abra o Telegram e procure pelo usuário `@BotFather`
+- Envie a mensagem `/newbot`
+- Siga as instruções para criar seu bot
+- Você receberá um **Token** (copie e guarde!)
+  - Exemplo: `123456789:ABCdefGHIjklMNOpqrSTUvwxyzABCdEfG`
+
+**2. Obter Seu Chat ID:**
+- Procure pelo usuário `@userinfobot` no Telegram
+- Envie qualquer mensagem
+- Ele responderá com seu **Chat ID**
+
+**3. Iniciar Seu Bot:**
+- Procure pelo bot que você criou (usando o nome que escolheu)
+- Envie a mensagem `/start`
+
+**4. Configurar Variáveis de Ambiente:**
+- Crie um arquivo chamado `.env` na raiz do projeto
+- Adicione as seguintes linhas:
+
+```
+TELEGRAM_TOKEN=seu_token_aqui
+TELEGRAM_CHAT_ID=seu_chat_id_aqui
+```
+
+**Importante:** O arquivo `.env` está protegido pelo `.gitignore`, então suas credenciais **nunca serão enviadas** ao repositório Git!
 
 ---
 
