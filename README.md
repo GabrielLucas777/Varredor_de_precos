@@ -1,62 +1,103 @@
-Price Monitor Bot - Seu Assistente de Preços
-O Que Faz Este Projeto?
-Um robô automático que monitora o preço de produtos para você:
+🛒 Price Monitor Bot
 
-Entra em várias lojas: Agora ele já acessa Terabyte, Amazon e Mercado Livre.
+Monitoramento automático de preços com alertas em tempo real via Telegram
 
-Lê o preço real: Identifica o valor atual e compara com o que você quer pagar.
+📌 Visão Geral
 
-Limpa a tela: Fecha sozinho propagandas e janelas de "assine nossa lista" que tentam esconder o preço.
+O Price Monitor Bot é um sistema de automação que monitora o preço de produtos em lojas online e envia alertas para o usuário quando o valor atinge o preço desejado.
 
-Avisa no celular: Quando o preço atinge o seu alvo, ele te manda um alerta no Telegram com a foto do produto e o link para comprar.
+Ele simula um navegador real, lida com pop-ups e anúncios automaticamente e envia notificações no Telegram com preço, diferença até a meta, link do produto e imagem.
 
-Como Funciona (Resumido)
-1. Você cria uma lista com: Produto → Link → Preço Alvo
-2. O robô abre o navegador em modo disfarçado
-3. Ele limpa qualquer propaganda ou anúncio da frente
-4. Lê o preço e captura a imagem do item
-5. Se preço ≤ seu alvo → ALERTA NO CELULAR COM FOTO!
-6. Se preço > seu alvo → Ele te avisa quanto falta para baixar
-Inteligência de Pasta (Caminhos Dinâmicos)
-O robô foi configurado para encontrar seus próprios arquivos automaticamente.
+Lojas suportadas:
 
-Como foi feito:
+Terabyte
 
-Python
+Amazon
+
+Mercado Livre
+
+🎯 Funcionalidades
+
+Monitoramento de múltiplos produtos
+
+Suporte a múltiplas lojas
+
+Leitura do preço real da página
+
+Remoção automática de anúncios e pop-ups
+
+Simulação de comportamento humano
+
+Envio de alertas via Telegram
+
+Envio da imagem do produto no alerta
+
+Cálculo da diferença até o preço desejado
+
+Logs em tempo real no terminal
+
+⚙️ Como Funciona
+
+O usuário cadastra os produtos em um arquivo precos.json
+
+O robô abre o navegador em modo oculto
+
+Remove anúncios e janelas que bloqueiam o preço
+
+Lê o preço atual e captura a imagem do produto
+
+Compara com o preço de referência
+
+Se o preço for menor ou igual → envia alerta no Telegram
+
+Se for maior → informa quanto falta para atingir a meta
+
+📂 Estrutura Inteligente de Caminhos
+
+O projeto utiliza caminhos dinâmicos para localizar arquivos, permitindo que a pasta seja movida sem quebrar o sistema.
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ARQUIVO_JSON = os.path.join(BASE_DIR, "precos.json")
-Por quê isso importa? Isso garante que o robô funcione em qualquer computador ou pasta sem você precisar mudar uma linha de código. Ele já está preparado para virar um programa instalável (.exe) no futuro.
 
-Técnicas de Simulação Humana
-Para evitar ser bloqueado, o robô agora "finge" ser uma pessoa real:
 
-Identidade Real: Ele se apresenta aos sites como um navegador Chrome comum e atualizado.
+Isso garante:
 
-Tela Cheia: Ele abre o site em tamanho de monitor normal (1920x1080) para enxergar todos os elementos da página.
+Compatibilidade com Windows, Linux e macOS
 
-Disfarce de Automação: Removemos as marcas que denunciam para o site que o navegador está sendo controlado por um robô.
+Facilidade para empacotar como .exe
 
-Limpeza de Propagandas: O robô aperta "Esc" e usa um comando para deletar janelas de anúncio que sobem depois que a página carrega.
+Portabilidade do projeto
 
-Diário do Robô (Logs no Terminal)
-O terminal agora é o seu painel de controle. Você verá mensagens claras sobre o que está acontecendo:
+🕵️‍♂️ Simulação de Navegador Humano
 
-[BUSCA]: O robô começou a olhar um item da sua lista.
+Para evitar bloqueios por automação, o robô utiliza:
 
-[SUCESSO]: O preço foi encontrado e lido corretamente.
+User-Agent de navegador real
 
-[ERRO]: O robô avisa se não conseguiu ler o preço ou se o link caiu.
+Resolução de tela 1920x1080
 
-[TELEGRAM]: Confirmação de que o aviso foi enviado para o seu celular.
+Remoção de navigator.webdriver
 
-Dica: O robô limpa o diário antigo toda vez que começa uma rodada nova, para você focar apenas no agora.
+Fechamento automático de pop-ups via ESC
 
-Manual da 'Lista de Compras' (arquivo precos.json)
-Este é o arquivo onde você adiciona os produtos que quer monitorar.
+Isso reduz drasticamente o risco de detecção por automação.
 
-Como Preencher:
+📊 Sistema de Logs
 
-JSON
+O terminal exibe o estado do robô em tempo real:
+
+Prefixo	Significado
+[BUSCA]	Produto sendo analisado
+[SUCESSO]	Preço encontrado com sucesso
+[ERRO]	Falha ao acessar ou ler a página
+[TELEGRAM]	Mensagem enviada ao usuário
+
+O log é limpo a cada nova rodada de verificação.
+
+📝 Cadastro de Produtos (precos.json)
+
+Exemplo:
+
 {
   "meu_monitor": {
     "nome": "Monitor Gamer 24 Full HD",
@@ -64,55 +105,61 @@ JSON
     "preco_referencia": 800.00
   }
 }
-Como Instalar e Rodar
-Pré-requisitos
-Python 3.8+ instalado
 
-Conexão de internet
+Campo	Descrição
+nome	Nome do produto
+url	Link completo da loja
+preco_referencia	Preço máximo desejado
+🚀 Instalação
+Requisitos
+
+Python 3.8 ou superior
+
+Conexão com internet
 
 Instalação
-Instalar as dependências: pip install playwright requests python-dotenv
+pip install playwright requests python-dotenv
+playwright install chromium
 
-Instalar o navegador: playwright install chromium
+📱 Configuração do Telegram
 
-Configurar o .env: Coloque seu Token e Chat ID do Telegram.
+Crie um bot com o @BotFather
 
-Executar: python automacao.py
+Obtenha seu Token
 
-ESTRADA À FRENTE (Progresso do Projeto)
-Checklist de coisas que já funcionam e o que falta:
+Pegue seu Chat ID usando o @userinfobot
 
-[x] Integração com Telegram ✅
-
-Enviar alerta direto no celular quando preço atingir alvo.
-
-Novo: Enviar foto do produto junto com o aviso.
-
-Novo: Calcular e mostrar quanto dinheiro falta para chegar na meta.
-
-[x] Monitoramento de Múltiplas Lojas ✅
-
-Suporte para Amazon (links curtos e anti-bloqueio).
-
-Suporte para Terabyte (espera o preço carregar de verdade).
-
-Suporte para Mercado Livre (leitura de preços correta).
-
-[ ] Criação do Executável (.exe)
-
-Transformar o script em um programa de clicar e rodar.
-
-[ ] Interface Visual (GUI)
-
-Criar uma janelinha para gerenciar os produtos sem abrir o arquivo JSON.
-
-Configuração do Telegram
-Crie seu bot com o @BotFather no Telegram e pegue o Token.
-
-Pegue seu Chat ID usando o @userinfobot.
-
-Crie um arquivo chamado .env e coloque:
+Crie um arquivo .env na raiz do projeto:
 
 TELEGRAM_TOKEN=seu_token_aqui
 TELEGRAM_CHAT_ID=seu_chat_id_aqui
-Última atualização: 21 de Janeiro de 2026.
+
+▶️ Executando
+python automacao.py
+
+📌 Tecnologias Utilizadas
+Item	Tecnologia
+Linguagem	Python
+Automação	Playwright
+Mensageria	Telegram API
+Configuração	python-dotenv
+Armazenamento	JSON
+🛠 Futuras implementações
+
+ Monitoramento multi-loja
+
+ Integração com Telegram
+
+ Envio de imagem do produto
+
+ Cálculo de diferença até a meta
+
+ Limpeza automática de anúncios
+
+ Interface gráfica (GUI)
+
+ Geração de executável (.exe)
+
+📅 Última atualização
+
+Janeiro de 2026
