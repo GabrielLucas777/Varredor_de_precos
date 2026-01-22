@@ -9,5 +9,20 @@
         "preco_referencia": 1800.0,
         "url": "https://www.terabyteshop.com.br/produto/31707/monitor-gamer-samsung-odyssey-g5-34-pol-va-curvo-ultrawide-wqhd-1ms-165hz-hdr10-freesync-premium-hdmidp-lc34g55twwlmzd",
         "status": "indisponivel"
+    },
+    "echo_dot_amazon": {
+        "nome": "Echo Dot 5ª Geração",
+        "preco_referencia": 700.0,
+        "url": "https://www.amazon.com.br/dp/B09B8VGCR8"
+    },
+    "playstation_5": {
+    "nome": "PlayStation 5 Slim Digital",
+    "preco_referencia": 5500.0,
+    "url": "https://www.amazon.com.br/dp/B0FPGF9J2J"
+},
+    "moto_eletrica": {
+        "nome": "Moto Elétrica C/ Bateria 60v E Alarme 2 Lugares, 50km",
+        "preco_referencia": 10500.0,
+        "url": "https://produto.mercadolivre.com.br/MLB-5552259586-moto-eletrica-c-bateria-60v-e-alarme-2-lugares-50km-_JM?searchVariation=189535019765#polycard_client=search-desktop&searchVariation=189535019765&search_layout=grid&position=21&type=item&tracking_id=47dbf99a-5081-4147-bbd6-4527dc8fec15"
     }
 }

@@ -1,320 +1,118 @@
-# Price Monitor Bot - Seu Assistente de Preços
+Price Monitor Bot - Seu Assistente de Preços
+O Que Faz Este Projeto?
+Um robô automático que monitora o preço de produtos para você:
 
-## O Que Faz Este Projeto?
+Entra em várias lojas: Agora ele já acessa Terabyte, Amazon e Mercado Livre.
 
-Um robô automático que:
-- Entra em sites de lojas (como Terabyte, Amazon, Kabum)
-- Lê o preço do produto que você quer
-- Compara com o valor que você deseja pagar
-- Avisa quando o preço cai para seu alvo
+Lê o preço real: Identifica o valor atual e compara com o que você quer pagar.
 
-Você configura uma vez e o robô trabalha para você!
+Limpa a tela: Fecha sozinho propagandas e janelas de "assine nossa lista" que tentam esconder o preço.
 
+Avisa no celular: Quando o preço atinge o seu alvo, ele te manda um alerta no Telegram com a foto do produto e o link para comprar.
 
-
----
-
-## Como Funciona (Resumido)
-
-```
-1. Você cria um arquivo com: Produto → Link → Preço Alvo
-2. Robô abre o navegador
-3. Acessa o link
-4. Lê o preço atual
-5. Se preço ≤ seu alvo → ALERTA!
-6. Se preço > seu alvo → Continua esperando
-```
-
----
-
-## Inteligência de Pasta (Caminhos Dinâmicos)
-
+Como Funciona (Resumido)
+1. Você cria uma lista com: Produto → Link → Preço Alvo
+2. O robô abre o navegador em modo disfarçado
+3. Ele limpa qualquer propaganda ou anúncio da frente
+4. Lê o preço e captura a imagem do item
+5. Se preço ≤ seu alvo → ALERTA NO CELULAR COM FOTO!
+6. Se preço > seu alvo → Ele te avisa quanto falta para baixar
+Inteligência de Pasta (Caminhos Dinâmicos)
 O robô foi configurado para encontrar seus próprios arquivos automaticamente.
 
-**Como foi feito:**
+Como foi feito:
 
-```python
+Python
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ARQUIVO_JSON = os.path.join(BASE_DIR, "precos.json")
-```
+Por quê isso importa? Isso garante que o robô funcione em qualquer computador ou pasta sem você precisar mudar uma linha de código. Ele já está preparado para virar um programa instalável (.exe) no futuro.
 
-**Por quê isso importa?**
+Técnicas de Simulação Humana
+Para evitar ser bloqueado, o robô agora "finge" ser uma pessoa real:
 
-Sem essa configuração, o código dependeria de um caminho fixo como:
-```
-D:\Desenvolvimento\automacao_ecommerce\precos.json
-```
+Identidade Real: Ele se apresenta aos sites como um navegador Chrome comum e atualizado.
 
-Isso quebraria se:
-- Você movesse a pasta
-- Usasse em outro computador
-- Quisesse transformar em um .exe
+Tela Cheia: Ele abre o site em tamanho de monitor normal (1920x1080) para enxergar todos os elementos da página.
 
-**Com a configuração correta:**
-- O robô funciona em qualquer lugar
-- Não precisa configurar nada manualmente
-- Está pronto para virar um executável (.exe) no futuro
-- Funciona em Windows, Mac e Linux
+Disfarce de Automação: Removemos as marcas que denunciam para o site que o navegador está sendo controlado por um robô.
 
----
+Limpeza de Propagandas: O robô aperta "Esc" e usa um comando para deletar janelas de anúncio que sobem depois que a página carrega.
 
-## Técnicas de Simulação Humana
+Diário do Robô (Logs no Terminal)
+O terminal agora é o seu painel de controle. Você verá mensagens claras sobre o que está acontecendo:
 
-O robô não age como uma máquina fria. Ele "disfarça-se" de um humano real:
+[BUSCA]: O robô começou a olhar um item da sua lista.
 
-### 1. Identificação de Navegador Real
-```python
-user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64)..."
-```
-O robô diz: "Sou um navegador Chrome comum" (e não "Sou um bot Playwright")
+[SUCESSO]: O preço foi encontrado e lido corretamente.
 
-### 2. Tamanho de Tela Normal
-```python
-viewport={"width": 1366, "height": 768}
-```
-Usa resolução comum (1366x768), como a maioria dos monitores. Não aparece como mobile ou coisa estranha.
+[ERRO]: O robô avisa se não conseguiu ler o preço ou se o link caiu.
 
-### 3. Pausas Entre Ações
-```python
-page.wait_for_timeout(random.randint(3000, 5000))  # Aguarda 3-5 segundos
-```
-Um humano lê uma página em alguns segundos. Um bot puro extrairia dados em milissegundos.
-O robô deliberadamente **espera** para parecer mais humano.
+[TELEGRAM]: Confirmação de que o aviso foi enviado para o seu celular.
 
-### 4. Desabilitar Sinais de Automação
-```python
-args=["--disable-blink-features=AutomationControlled"]
-```
-Remove um sinalizador que denuncia automação (navigator.webdriver).
+Dica: O robô limpa o diário antigo toda vez que começa uma rodada nova, para você focar apenas no agora.
 
----
-
-## Manual da 'Lista de Compras' (arquivo precos.json)
-
+Manual da 'Lista de Compras' (arquivo precos.json)
 Este é o arquivo onde você adiciona os produtos que quer monitorar.
 
-### Como Preencher
+Como Preencher:
 
-Abra o arquivo `precos.json` e adicione seus produtos:
-
-```json
+JSON
 {
   "meu_monitor": {
-    "nome": "Monitor Gamer 24\" Full HD",
-    "url": "https://www.terabyteshop.com.br/produto/12345/monitor-gamer-...",
+    "nome": "Monitor Gamer 24 Full HD",
+    "url": "https://www.terabyteshop.com.br/produto/...",
     "preco_referencia": 800.00
-  },
-  
-  "meu_teclado": {
-    "nome": "Teclado Mecânico RGB",
-    "url": "https://www.terabyteshop.com.br/produto/67890/teclado-mecanico-...",
-    "preco_referencia": 450.00
   }
 }
-```
+Como Instalar e Rodar
+Pré-requisitos
+Python 3.8+ instalado
 
-### Campos Explicados
+Conexão de internet
 
-| Campo | O Que É | Exemplo |
-|-------|---------|---------|
-| `nome` | Um label para você reconhecer nos alertas | "Monitor Gamer 24\"" |
-| `url` | Endereço completo do produto no site | https://www.terabyte...produto/12345/... |
-| `preco_referencia` | O preço que você quer pagar | 800.00 |
+Instalação
+Instalar as dependências: pip install playwright requests python-dotenv
 
-### Passo a Passo para Adicionar
+Instalar o navegador: playwright install chromium
 
-1. Abra `precos.json` com Bloco de Notas ou VSCode
-2. Copie um bloco de produto (do `{` ao `}`)
-3. Altere `nome`, `url` e `preco_referencia`
-4. Salve o arquivo
-5. Na próxima execução, o robô monitorará esse novo produto
+Configurar o .env: Coloque seu Token e Chat ID do Telegram.
 
-**Dica:** Use um validador JSON se ficar com dúvida: [jsonlint.com](https://jsonlint.com)
+Executar: python automacao.py
 
----
+ESTRADA À FRENTE (Progresso do Projeto)
+Checklist de coisas que já funcionam e o que falta:
 
-## Como Instalar e Rodar
+[x] Integração com Telegram ✅
 
-### Pré-requisitos
-- Python 3.8+ instalado
-- Conexão de internet
+Enviar alerta direto no celular quando preço atingir alvo.
 
-### Instalação (4 passos)
+Novo: Enviar foto do produto junto com o aviso.
 
-**1. Instalar as dependências do robô:**
-```bash
-pip install playwright
-```
+Novo: Calcular e mostrar quanto dinheiro falta para chegar na meta.
 
-**2. Instalar o navegador que ele usa:**
-```bash
-playwright install chromium
-```
+[x] Monitoramento de Múltiplas Lojas ✅
 
-**3. Editar o arquivo `precos.json`:**
-Adicione seus produtos conforme a seção anterior.
+Suporte para Amazon (links curtos e anti-bloqueio).
 
-**4. Executar o robô:**
-```bash
-python automacao.py
-```
+Suporte para Terabyte (espera o preço carregar de verdade).
 
-Você verá um navegador abrir e o robô começar a trabalhar!
+Suporte para Mercado Livre (leitura de preços correta).
 
-### O Que Você Vai Ver
+[ ] Criação do Executável (.exe)
 
-```
---- Verificando: Monitor Gamer 24" Full HD ---
-preço atual: R$ 800.00
+Transformar o script em um programa de clicar e rodar.
 
-STATUS: Disponível | Preço Site: R$ 750.50
-ALERTA: O PREÇO ATINGIU O SEU ALVO! RECOMENDO COMPRAR AGORA!
+[ ] Interface Visual (GUI)
 
----
+Criar uma janelinha para gerenciar os produtos sem abrir o arquivo JSON.
 
-STATUS: Disponível | Preço Site: R$ 920.00
-Ainda caro. Diferença: R$ 120.00. Não recomendo comprar.
-```
+Configuração do Telegram
+Crie seu bot com o @BotFather no Telegram e pegue o Token.
 
----
+Pegue seu Chat ID usando o @userinfobot.
 
-## Problemas Comuns
+Crie um arquivo chamado .env e coloque:
 
-### "ModuleNotFoundError: No module named 'playwright'"
-Execute: `pip install playwright`
-
-### "precos.json não encontrado"
-Certifique-se de que o arquivo está na mesma pasta do script. Se não tiver, crie um vazio.
-
-### Página não carrega
-- Verifique a conexão de internet
-- Teste a URL no navegador manualmente
-- Espere um pouco e tente de novo
-
----
-
-## Estrutura de Pastas
-
-```
-automacao_ecommerce/
-├── src/
-│   ├── automacao.py      ← O script principal
-│   └── comms.py          ← Módulo de comunicação (Telegram)
-├── data/
-│   └── precos.json       ← Seus produtos (EDITE AQUI!)
-├── .gitignore            ← Protege credenciais (.env, __pycache__)
-├── .env                  ← Variáveis de ambiente (locais, não versionado)
-├── requirements.txt      ← Dependências do projeto
-└── README.md             ← Este arquivo
-```
-
-**Nota:** O projeto agora é modularizado:
-- **src/** contém todo o código Python
-- **data/** contém arquivos de dados (JSON)
-- **.env** armazena suas credenciais (Token e Chat ID) de forma segura
-
----
-
-## ESTRADA À FRENTE (Tarefas para Desenvolvimento Futuro)
-
-Checklist de coisas que ainda precisam ser feitas:
-
-- [x] **Integração com Telegram** ✅
-  - Enviar alerta direto no celular quando preço atingir alvo
-  - Usar bot do Telegram para notificações
-  - Status: Concluído
-
-- [ ] **Monitoramento de Múltiplas Lojas**
-  - Adicionar suporte para Kabum
-  - Adicionar suporte para Amazon
-  - Adicionar suporte para outras lojas
-  - Problema: Cada site tem um seletor CSS diferente para preço
-  - Status: Não iniciado
-
-- [ ] **Criação do Executável (.exe)**
-  - Transformar o script Python em um programa instalável
-  - Usar PyInstaller ou similar
-  - Objetivo: Usuários não precisam ter Python instalado
-  - Status: Não iniciado
-
-- [ ] **Interface Visual (GUI)**
-  - Criar uma janelinha para adicionar/editar produtos
-  - Sem precisar mexer no arquivo precos.json
-  - Mostrar status do robô em tempo real
-  - Usar PyQt5 ou Tkinter
-  - Status: Não iniciado
-
----
-
-## Configuração do Telegram
-
-Agora o robô pode enviar notificações direto para seu celular via Telegram!
-
-### O Que Você Precisa
-
-**1. Criar um Bot no Telegram:**
-- Abra o Telegram e procure pelo usuário `@BotFather`
-- Envie a mensagem `/newbot`
-- Siga as instruções para criar seu bot
-- Você receberá um **Token** (copie e guarde!)
-  - Exemplo: `123456789:ABCdefGHIjklMNOpqrSTUvwxyzABCdEfG`
-
-**2. Obter Seu Chat ID:**
-- Procure pelo usuário `@userinfobot` no Telegram
-- Envie qualquer mensagem
-- Ele responderá com seu **Chat ID**
-
-**3. Iniciar Seu Bot:**
-- Procure pelo bot que você criou (usando o nome que escolheu)
-- Envie a mensagem `/start`
-
-**4. Configurar Variáveis de Ambiente:**
-- Crie um arquivo chamado `.env` na raiz do projeto
-- Adicione as seguintes linhas:
-
-```
 TELEGRAM_TOKEN=seu_token_aqui
 TELEGRAM_CHAT_ID=seu_chat_id_aqui
-```
-
-**Importante:** O arquivo `.env` está protegido pelo `.gitignore`, então suas credenciais **nunca serão enviadas** ao repositório Git!
-
----
-
-## Notas Para Desenvolvimento
-
-### Por Que Os Caminhos Dinâmicos São Importantes
-
-Quando transformarmos em .exe:
-```
-C:\Program Files\PriceMonitorBot\automacao.exe
-```
-
-O programa ainda será capaz de encontrar `precos.json` sem problemas, não importa onde estiver instalado.
-
-### Próxima Prioridade
-
-Se for melhorar o código agora, a prioridade é:
-1. **Telegram** (mais fácil, mais útil)
-2. **Multi-site** (mais complexo, requer análise de cada site)
-3. **.exe** (complexidade média, requer testes)
-4. **GUI** (complexidade alta, requer UI/UX)
-
----
-
-## Informações Técnicas Básicas
-
-| Item | Valor |
-|------|-------|
-| **Linguagem** | Python 3.8+ |
-| **Biblioteca Principal** | Playwright |
-| **Persistência** | JSON |
-| **Tempo por Produto** | ~10 segundos |
-
----
-
-## Licença e Créditos
-
-Desenvolvido como projeto pessoal de automação.
-
-**Última atualização:** Janeiro de 2026
+Última atualização: 21 de Janeiro de 2026.

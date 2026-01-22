@@ -1,104 +1,171 @@
 import json
 import random
 import os 
+import logging
+import requests
 from playwright.sync_api import sync_playwright  
-from comms import enviar_mensagem_telegram
+from dotenv import load_dotenv
 
-# --- PARTE 1: CONFIGURAÇÃO DE CAMINHOS ---
+# --- PARTE 0: TELEGRAM (SINALIZAÇÃO) ---
+load_dotenv()
+TOKEN = os.getenv("TELEGRAM_TOKEN")
+CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
+
+def enviar_mensagem_telegram(mensagem, imagem_url=None):
+    """ Envia o card visual e confirma o sucesso da operação. """
+    try:
+        url_base = f"https://api.telegram.org/bot{TOKEN}/"
+        metodo = "sendPhoto" if imagem_url else "sendMessage"
+        payload = {"chat_id": CHAT_ID, "parse_mode": "Markdown"}
+        
+        if imagem_url:
+            payload.update({"photo": imagem_url, "caption": mensagem})
+        else:
+            payload.update({"text": mensagem})
+            
+        resp = requests.post(f"{url_base}{metodo}", data=payload)
+        if resp.status_code == 200:
+            logger.info("  [TELEGRAM] -> Notificação enviada ao celular.")
+    except Exception as e:
+        logger.error(f"  [TELEGRAM] -> Erro na API: {e}")
+
+# --- PARTE 1: ORGANIZAÇÃO E LOGS ---
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ROOT_DIR = os.path.dirname(BASE_DIR)
 ARQUIVO_JSON = os.path.join(ROOT_DIR, "data", "precos.json")
+PASTA_LOGS = os.path.join(ROOT_DIR, "logs")
 
-# --- PARTE 2: FUNÇÕES DE APOIO ---
+if not os.path.exists(PASTA_LOGS): os.makedirs(PASTA_LOGS)
+
+# Logs configurados para serem curtos e diretos
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s | %(message)s',
+    datefmt='%H:%M:%S',
+    handlers=[
+        logging.FileHandler(os.path.join(PASTA_LOGS, "auditoria.log"), mode='w', encoding='utf-8'),
+        logging.StreamHandler()
+    ]
+)
+logger = logging.getLogger()
 
 def tratar_preco(texto_bruto):
-    """ Transforma 'R$ 1.500,00' em 1500.00 """
-    preco_limpo = texto_bruto.replace('R$', '').replace('.', '').replace(',', '.').strip()
-    return float(preco_limpo)
+    """ Converte moeda em número real. Ex: 'R$ 1.500,00' -> 1500.0 """
+    if not texto_bruto: return 0.0
+    limpo = texto_bruto.replace('R$', '').replace('\xa0', ' ').replace('.', '').replace(',', '.').strip()
+    try: return float(limpo)
+    except: return 0.0
 
-def carregar_dados_json():
-    """ Lê o banco de dados de produtos """
+# --- PARTE 3: EXTRATORES (ESTRATÉGIA POR SITE) ---
+
+
+
+def extrair_dados_site(page, site_tipo):
+    """ Tenta capturar o preço e a foto após a limpeza agressiva da página. """
     try:
-        with open(ARQUIVO_JSON, 'r', encoding='utf-8-sig') as f:
-            return json.load(f)
-    except FileNotFoundError:
-        print(f" ❌ Erro: Arquivo não encontrado em {ARQUIVO_JSON}")
-        return {}
+        if site_tipo == "amazon":
+            page.wait_for_selector('.aok-offscreen', timeout=15000)
+            preco = tratar_preco(page.locator('.aok-offscreen').first.inner_text())
+            img = page.locator('#landingImage').get_attribute('src')
+        elif site_tipo == "ml":
+            page.wait_for_selector('.andes-money-amount__fraction', timeout=10000)
+            preco = tratar_preco(page.locator('.andes-money-amount__fraction').first.inner_text())
+            img = page.locator('.ui-pdp-gallery__figure__image').first.get_attribute('src')
+        else: # Terabyte
+            # Espera o seletor principal e garante que ele tenha um valor preenchido
+            page.wait_for_selector('#valVista', timeout=15000)
+            page.wait_for_function("document.querySelector('#valVista').innerText.includes('R$')", timeout=10000)
+            preco = tratar_preco(page.locator('#valVista').first.inner_text())
+            img = page.locator('#produto_foto img').first.get_attribute('src')
+        
+        return preco, img
+    except Exception:
+        return None, None
 
-# --- PARTE 3: AÇÃO WEB ---
+# --- PARTE 4: MAESTRO (DRIBILANDO DEFESAS) ---
 
-def verificar_produto_no_site(page, produto):
-    """ Navega e extrai o preço atual do seletor #valVista """
-    print(f"\n--- Analisando: {produto['nome']} ---")
+def verificar_produto(page, produto):
+    """ Executa a limpeza de overlays e extração de dados. """
+    url = produto['url']
+    logger.info(f"🔎 [ANÁLISE]: {produto['nome']}")
     
-    page.goto(produto['url'], wait_until='domcontentloaded', timeout=60000)
-    page.wait_for_timeout(random.randint(3000, 5000)) 
+    try:
+        # 1. Navegação básica
+        page.goto(url, wait_until='domcontentloaded', timeout=60000)
+        
+        # 2. LIMPEZA SÊNIOR: Remove pop-ups, newsletters e camadas transparentes
+        page.evaluate("""
+            () => {
+                const seletores = ['.newsletter', '.modal', '.popup', '.overlay', '#newsletter', '.swal2-container'];
+                seletores.forEach(s => document.querySelectorAll(s).forEach(el => el.remove()));
+                document.body.style.overflow = 'auto'; // Reativa o scroll se o pop-up travou
+            }
+        """)
+        
+        # 3. Tempo Humano
+        page.keyboard.press("Escape")
+        page.wait_for_timeout(3000) 
+        page.mouse.wheel(0, 500)
 
-    aviso_indisponivel = page.get_by_role("heading", name=" Produto Indisponível")
+        # 4. Decisão de Loja
+        if "amazon.com" in url.lower(): site = "amazon"
+        elif "mercadolivre.com" in url.lower(): site = "ml"
+        else: site = "terabyte"
 
-    if not aviso_indisponivel.is_visible():
-        try:
-            elemento_preco = page.locator('#valVista').first
-            elemento_preco.wait_for(state="visible", timeout=10000)
-            return tratar_preco(elemento_preco.inner_text())
-        except Exception:
-            return None
-    else:
-        print(" STATUS: Produto Indisponível.")
-        return None
+        return extrair_dados_site(page, site)
+    except Exception as e:
+        logger.error(f"  [ERRO]: Falha na navegação: {e}")
+        return None, None
 
-# --- PARTE 4: FLUXO PRINCIPAL (Gerente) ---
+# --- PARTE 5: FLUXO DE EXECUÇÃO ---
 
 def executar_bot():
-    with sync_playwright() as p: 
-        browser = p.chromium.launch(headless=False, args=["--disable-blink-features=AutomationControlled"]) 
-        context = browser.new_context(
-            viewport={"width": 1366, "height": 768},
-            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-        )
+    os.system('cls' if os.name == 'nt' else 'clear')
+    logger.info("=== MONITORAMENTO ATIVADO (MODO STEALTH) ===")
+    
+    with sync_playwright() as p:
+        # Forçamos a resolução 1080p para o robô 'enxergar' tudo
+        browser = p.chromium.launch(headless=False, args=["--start-maximized"])
+        context = browser.new_context(viewport={"width": 1920, "height": 1080})
         page = context.new_page()
+        
+        # O Pulo do Gato: Modifica o ambiente do navegador antes da Amazon/Terabyte carregar
+        page.add_init_script("""
+            Object.defineProperty(navigator, 'webdriver', {get: () => undefined});
+            window.navigator.chrome = { runtime: {} };
+        """)
 
-        dados_json = carregar_dados_json()
+        with open(ARQUIVO_JSON, 'r', encoding='utf-8-sig') as f:
+            produtos = json.load(f)
 
-        for item in dados_json:
-            try:
-                produto = dados_json[item]
-                preco_site = verificar_produto_no_site(page, produto)
+        for id_item, dados in produtos.items():
+            preco_site, img_url = verificar_produto(page, dados)
+            meta = dados['preco_referencia']
 
-                if preco_site is not None:
-                    # CENÁRIO A: PREÇO BAIXOU (Promoção)
-                    if preco_site <= produto['preco_referencia']:
-                        print(" ✅ SUCESSO: Alerta de promoção enviado!")
-                        msg_promo = (
-                            f"🔥 *PROMOÇÃO ENCONTRADA!*\n\n"
-                            f"📦 {produto['nome']}\n"
-                            f"💵 Preço: R$ {preco_site:.2f}\n"
-                            f"🎯 Meta: R$ {produto['preco_referencia']:.2f}\n\n"
-                            f"🔗 [COMPRAR AGORA]({produto['url']})"
-                        )
-                        enviar_mensagem_telegram(msg_promo)
+            # --- LÓGICA DE LOG E NOTIFICAÇÃO CORRIGIDA ---
+            if preco_site is not None and preco_site > 0:
+                logger.info(f"  [SUCESSO]: Capturado R$ {preco_site:.2f}")
+                
+                if preco_site <= meta:
+                    status = (f"🔥 *PROMOÇÃO ENCONTRADA!*\n\n*{dados['nome']}*\n"
+                              f"💰 Preço: R$ {preco_site:.2f}\n🎯 Meta: R$ {meta:.2f}\n\n"
+                              f"🔗 [COMPRAR AGORA]({dados['url']})")
+                else:
+                    dif = preco_site - meta
+                    status = (f"ℹ️ *MONITORAMENTO ATIVO*\n\n*{dados['nome']}*\n"
+                              f"💰 Preço: R$ {preco_site:.2f}\n📉 Faltam: R$ {dif:.2f}\n\n"
+                              f"📢 *Fica tranquilo!* O robô segue vigiando por aqui. 🚀")
+                
+                enviar_mensagem_telegram(status, img_url)
+            else:
+                # Log de Erro Real: Só dispara se o preco_site for None ou 0
+                logger.error(f"  [FALHA]: Não foi possível ler o preço de {dados['nome']}")
+                enviar_mensagem_telegram(f"⚠️ *FALHA*\nNão consegui ler o preço de: *{dados['nome']}*", None)
 
-                    # CENÁRIO B: PREÇO AINDA ALTO (Apenas Status)
-                    else:
-                        diferenca = preco_site - produto['preco_referencia']
-                        print(f" ⏳ Ainda caro. Diferença: R$ {diferenca:.2f}")
-                        
-                        msg_status = (
-                            f"ℹ️ *Status do Monitoramento*\n"
-                            f"Produto: {produto['nome']}\n"
-                            f"Preço: R$ {preco_site:.2f}\n"
-                            f"Faltam R$ {diferenca:.2f} para o seu alvo, recomendo esperar mais um pouco."
-                        )
-                        enviar_mensagem_telegram(msg_status)
+            page.wait_for_timeout(random.randint(4000, 7000))
 
-                page.wait_for_timeout(2000)
-            
-            except Exception as e:
-                enviar_mensagem_telegram(f"⚠️ Erro ao processar item: {e}")
-
-        print("\n" + "="*40)
-        print("Ciclo de verificação finalizado.")
         browser.close()
+    logger.info("=== CICLO FINALIZADO ===")
 
 if __name__ == "__main__":
     executar_bot()

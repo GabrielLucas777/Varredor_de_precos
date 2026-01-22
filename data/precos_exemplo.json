@@ -1,0 +1,19 @@
+{
+  "monitor_terabyte": {
+    "nome": "Monitor Gamer Dell 27\" 144Hz",
+    "url": "https://www.terabyteshop.com.br/produto/12345/monitor-gamer-dell-s2721dgf-27-",
+    "preco_referencia": 1200.00
+  },
+  
+  "teclado_mecanico_amazon": {
+    "nome": "Teclado Mecânico RGB Corsair K95",
+    "url": "https://www.amazon.com.br/Corsair-K95-Platinum-Mecanico-RGB/dp/B00000000/",
+    "preco_referencia": 850.00
+  },
+  
+  "mouse_mercado_livre": {
+    "nome": "Mouse Logitech G502 HERO",
+    "url": "https://www.mercadolivre.com.br/mouse-logitech-g502-hero-gaming-rgb/p/MLV-12345678",
+    "preco_referencia": 250.00
+  }
+}
