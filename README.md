@@ -173,7 +173,7 @@ O arquivo `precos.json` é onde você configura os produtos para monitorar:
 - [x] Suporte completo para **Amazon Brasil**
 - [x] Suporte completo para **Mercado Livre**
 - [x] Suporte completo para **Terabyte Shop**
-- [x] Envio de screenshots no Telegram
+- [x] Envio de screenshots e notificações no Telegram
 - [x] Cálculo automático de diferença de preço (R$ e %)
 - [x] Sistema de limpeza de anúncios e pop-ups
 - [x] Logs coloridos e organizados
